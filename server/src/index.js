@@ -6,6 +6,7 @@ const mongoose = require('mongoose')
 const applicationRoutes = require('./routes/applicationRoutes')
 const profileRoutes = require('./routes/profileRoutes')
 const statsRoutes = require('./routes/statsRoutes')
+const aiRoutes = require('./routes/aiRoutes')
 
 const app = express()
 
@@ -19,6 +20,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/applications', applicationRoutes)
 app.use('/api/profile', profileRoutes)
 app.use('/api/stats', statsRoutes)
+app.use('/api', aiRoutes)
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' })

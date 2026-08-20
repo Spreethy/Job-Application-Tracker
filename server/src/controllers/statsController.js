@@ -1,4 +1,5 @@
 const Application = require('../models/Application')
+const { getProviderName } = require('../ai/provider')
 
 const getStats = async (req, res, next) => {
   try {
@@ -17,7 +18,9 @@ const getStats = async (req, res, next) => {
       .sort({ nextActionDate: 1 })
       .limit(5)
 
-    res.json({ statusCounts, total, upcoming })
+    const aiProvider = await getProviderName()
+
+    res.json({ statusCounts, total, upcoming, aiProvider })
   } catch (err) {
     next(err)
   }
