@@ -5,6 +5,12 @@ const SORT_FIELDS = ['company', 'role', 'appliedDate', 'status', 'fitScore', 'cr
 const buildFilter = (query) => {
   const filter = {}
   if (query.status) filter.status = query.status
+  if (query.q) {
+    filter.$or = [
+      { company: { $regex: query.q, $options: 'i' } },
+      { role: { $regex: query.q, $options: 'i' } },
+    ]
+  }
   if (query.company) filter.company = { $regex: query.company, $options: 'i' }
   if (query.role) filter.role = { $regex: query.role, $options: 'i' }
   if (query.upcoming === 'true') {
