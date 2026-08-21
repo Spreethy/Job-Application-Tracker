@@ -6,7 +6,7 @@ import AddApplication from './pages/AddApplication'
 import EditApplication from './pages/EditApplication'
 import ApplicationDetail from './pages/ApplicationDetail'
 import Profile from './pages/Profile'
-import Placeholder from './components/Placeholder'
+import Assistant from './pages/Assistant'
 
 function App() {
   return (
@@ -18,10 +18,7 @@ function App() {
           <Route path="/applications/new" element={<AddApplication />} />
           <Route path="/applications/:id" element={<ApplicationDetail />} />
           <Route path="/applications/:id/edit" element={<EditApplication />} />
-          <Route
-            path="/assistant"
-            element={<Placeholder title="AI Assistant" />}
-          />
+          <Route path="/assistant" element={<Assistant />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
       </Layout>
