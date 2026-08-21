@@ -7,11 +7,13 @@ import EditApplication from './pages/EditApplication'
 import ApplicationDetail from './pages/ApplicationDetail'
 import Profile from './pages/Profile'
 import Assistant from './pages/Assistant'
+import ToastProvider from './components/Toast'
 
 function App() {
   return (
     <BrowserRouter>
-      <Layout>
+      <ToastProvider>
+        <Layout>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/applications" element={<Applications />} />
@@ -21,7 +23,8 @@ function App() {
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
-      </Layout>
+        </Layout>
+      </ToastProvider>
     </BrowserRouter>
   )
 }

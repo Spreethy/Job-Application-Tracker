@@ -1,21 +1,22 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api/client'
+import { useToast } from '../components/toast-context'
 
 const inputClass =
   'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500'
 
 export default function Profile() {
+  const showToast = useToast()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
+  const [loadError, setLoadError] = useState('')
 
   useEffect(() => {
     api
       .getProfile()
       .then((res) => setProfile(res.data))
-      .catch((err) => setError(err.message))
+      .catch((err) => setLoadError(err.message))
       .finally(() => setLoading(false))
   }, [])
 
@@ -37,14 +38,12 @@ export default function Profile() {
     }
 
     setSaving(true)
-    setMessage('')
-    setError('')
     try {
       const res = await api.updateProfile(payload)
       setProfile(res.data)
-      setMessage('Profile saved. AI features will use these details.')
+      showToast('Profile saved. AI features will use these details.', 'success')
     } catch (err) {
-      setError(err.message)
+      showToast(err.message, 'error')
     } finally {
       setSaving(false)
     }
@@ -52,6 +51,14 @@ export default function Profile() {
 
   if (loading) {
     return <div className="py-16 text-center text-gray-500">Loading...</div>
+  }
+
+  if (loadError) {
+    return (
+      <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-4">
+        Failed to load profile: {loadError}
+      </div>
+    )
   }
 
   return (
@@ -62,17 +69,6 @@ export default function Profile() {
           This is what the AI uses to score job fit and generate interview prep.
         </p>
       </div>
-
-      {error && (
-        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-4">
-          {error}
-        </div>
-      )}
-      {message && (
-        <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg p-4">
-          {message}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

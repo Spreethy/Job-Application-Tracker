@@ -141,7 +141,9 @@ export default function Applications() {
           </p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <>
+          {/* Desktop table */}
+          <div className="hidden md:block bg-white border border-gray-200 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -202,7 +204,57 @@ export default function Applications() {
               </tbody>
             </table>
           </div>
-        </div>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3">
+            {applications.map((app) => (
+              <Link
+                key={app.id}
+                to={`/applications/${app.id}`}
+                className="block bg-white border border-gray-200 rounded-xl p-4 hover:border-indigo-300 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{app.company}</p>
+                    <p className="text-sm text-gray-600 truncate">{app.role}</p>
+                  </div>
+                  <StatusBadge status={app.status} />
+                </div>
+                <dl className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <dt className="text-gray-400 uppercase tracking-wide">Fit</dt>
+                    <dd className="mt-0.5 font-semibold">
+                      {app.fitScore !== null ? (
+                        <span
+                          className={
+                            app.fitScore >= 70
+                              ? 'text-green-600'
+                              : app.fitScore >= 40
+                                ? 'text-amber-600'
+                                : 'text-gray-400'
+                          }
+                        >
+                          {app.fitScore}%
+                        </span>
+                      ) : (
+                        <span className="text-gray-300">—</span>
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-gray-400 uppercase tracking-wide">Applied</dt>
+                    <dd className="mt-0.5 text-gray-600">{formatDate(app.appliedDate)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-gray-400 uppercase tracking-wide">Next action</dt>
+                    <dd className="mt-0.5 text-gray-600">{formatDate(app.nextActionDate)}</dd>
+                  </div>
+                </dl>
+              </Link>
+            ))}
+          </div>
+        </>
       )}
     </div>
   )

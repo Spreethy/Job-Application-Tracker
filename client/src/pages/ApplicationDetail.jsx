@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import StatusBadge from '../components/StatusBadge'
+import { useToast } from '../components/toast-context'
 
 function formatDate(value, withTime = false) {
   if (!value) return '—'
@@ -27,11 +28,11 @@ function DetailRow({ label, value }) {
 export default function ApplicationDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const showToast = useToast()
   const [application, setApplication] = useState(null)
   const [loading, setLoading] = useState(true)
   const [analyzing, setAnalyzing] = useState(false)
   const [prepping, setPrepping] = useState(false)
-  const [actionError, setActionError] = useState('')
 
   const load = () => {
     api
@@ -47,12 +48,12 @@ export default function ApplicationDetail() {
 
   const runAnalyze = async () => {
     setAnalyzing(true)
-    setActionError('')
     try {
       await api.analyzeApplication(id)
       load()
+      showToast('Fit analysis updated', 'success')
     } catch (err) {
-      setActionError(err.message)
+      showToast(err.message, 'error')
     } finally {
       setAnalyzing(false)
     }
@@ -60,12 +61,12 @@ export default function ApplicationDetail() {
 
   const runPrep = async () => {
     setPrepping(true)
-    setActionError('')
     try {
       await api.generateInterviewPrep(id)
       load()
+      showToast('Interview questions generated', 'success')
     } catch (err) {
-      setActionError(err.message)
+      showToast(err.message, 'error')
     } finally {
       setPrepping(false)
     }
@@ -79,7 +80,7 @@ export default function ApplicationDetail() {
       await api.deleteApplication(id)
       navigate('/applications')
     } catch (err) {
-      setActionError(err.message)
+      showToast(err.message, 'error')
     }
   }
 
@@ -279,12 +280,6 @@ export default function ApplicationDetail() {
               </div>
             )}
           </div>
-
-          {actionError && (
-            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-4">
-              {actionError}
-            </div>
-          )}
         </div>
       </div>
     </div>
