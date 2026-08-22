@@ -121,11 +121,6 @@ Base URL: `/api`
    upcoming actions?"*
 7. Resize the window — the applications table collapses into mobile cards.
 
-## Screenshots
-
-> Add screenshots here: `docs/screenshots/dashboard.png`,
-> `assistant.png`, `detail.png`.
-
 ## Project structure
 
 ```
