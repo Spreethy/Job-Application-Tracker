@@ -37,6 +37,111 @@ function extractTerms(text) {
   return [...found]
 }
 
+const TOPIC_WORDS = {
+  interview: ['interview', 'interviews', 'interviewing'],
+  offer: ['offer', 'offers', 'offered'],
+  rejected: ['reject', 'rejects', 'rejected', 'rejection', 'rejections'],
+  applied: ['applied', 'apply', 'applying', 'submitted'],
+  application: ['application', 'applications', 'apps'],
+  withdrawn: ['withdrawn', 'withdrew'],
+}
+
+const TOPIC_STATUS = {
+  interview: 'interview',
+  offer: 'offer',
+  rejected: 'rejected',
+  withdrawn: 'withdrawn',
+  applied: 'applied',
+}
+
+function editDistance(a, b) {
+  const m = a.length
+  const n = b.length
+  let prev = Array.from({ length: n + 1 }, (_, j) => j)
+  for (let i = 1; i <= m; i++) {
+    const curr = [i]
+    for (let j = 1; j <= n; j++) {
+      curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1))
+    }
+    prev = curr
+  }
+  return prev[n]
+}
+
+function detectTopics(text) {
+  const topics = new Set()
+  if (/\b(question|questions|prep|preparation|practice)\b/.test(text)) {
+    topics.add('questions')
+  }
+  for (const raw of text.split(/[^a-z0-9+#]+/)) {
+    for (const [topic, words] of Object.entries(TOPIC_WORDS)) {
+      for (const word of words) {
+        if (raw === word || editDistance(raw, word) <= (word.length >= 8 ? 2 : 1)) {
+          topics.add(topic)
+        }
+      }
+    }
+  }
+  return [...topics]
+}
+
+function formatDate(value) {
+  return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function listApps(apps) {
+  return apps.map((a) => `${a.role} at ${a.company}`).join(', ')
+}
+
+function describeCounts(apps, totalApplications, topics) {
+  const parts = []
+  for (const topic of topics) {
+    const status = TOPIC_STATUS[topic]
+    if (!status) continue
+    const matches = apps.filter((a) => a.status === status)
+    if (matches.length === 0) {
+      parts.push(`You have no applications in the ${status} stage.`)
+    } else {
+      parts.push(
+        `You have ${matches.length} application${matches.length === 1 ? '' : 's'} in the ${status} stage: ${listApps(matches)}.`
+      )
+    }
+  }
+  if (topics.includes('application')) {
+    parts.push(`In total you have ${totalApplications} application${totalApplications === 1 ? '' : 's'} in your tracker.`)
+  }
+  return parts.join(' ')
+}
+
+function describeUpcoming(apps) {
+  const upcoming = apps
+    .filter((a) => a.nextActionDate)
+    .sort((a, b) => new Date(a.nextActionDate) - new Date(b.nextActionDate))
+  if (upcoming.length === 0) {
+    return 'You have no upcoming action dates set on any application.'
+  }
+  const lines = upcoming
+    .slice(0, 5)
+    .map((a) => `${formatDate(a.nextActionDate)} — ${a.role} at ${a.company}`)
+  return `You have ${upcoming.length} upcoming action${upcoming.length === 1 ? '' : 's'}:\n${lines.join('\n')}`
+}
+
+function interviewPractice(apps) {
+  const interviewing = apps.filter((a) => a.status === 'interview')
+  if (interviewing.length === 0) {
+    return 'None of your applications are in the interview stage right now. Move one to "interview" and ask me again.'
+  }
+  const intro = `You have interviews with ${listApps(interviewing)}. Here are some questions to practice:`
+  const questions = [
+    `Walk me through a project that best shows the skills needed for this role.`,
+    'Tell me about a technical challenge you faced and how you solved it.',
+    'How do you prioritize when working on multiple features at once?',
+    'Give an example of feedback you received and how you acted on it.',
+    `Why do you want to work here, and what would you bring in your first 90 days?`,
+  ]
+  return `${intro}\n${questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}`
+}
+
 function summarizeContext(dataContext) {
   let data
   try {
@@ -125,32 +230,51 @@ class MockProvider {
       }
     }
 
-    const answers = []
+    let data = null
+    try {
+      data = JSON.parse(dataContext)
+    } catch {
+      data = null
+    }
+    const apps = (data && data.applications) || []
+    const totalApplications = data ? data.totalApplications : apps.length
 
-    const countPatterns = [
-      { re: /how many (.*)\?/, label: (m) => `Count of ${m[1]}` },
-    ]
+    const topics = detectTopics(lower)
 
-    const matches = lower.match(/how many ([a-z ]+)\?/)
-    if (matches) {
-      const target = matches[1]
-      if (target.includes('interview')) {
-        answers.push('Based on the data, count applications currently in the interview stage.')
-      } else if (target.includes('offer')) {
-        answers.push('Based on the data, count applications that reached an offer.')
-      } else if (target.includes('applied') || target.includes('application')) {
-        answers.push('The total number of applications in your tracker.')
+    if (topics.includes('questions')) {
+      return { answer: interviewPractice(apps) }
+    }
+
+    if (/compan/.test(lower) && (topics.includes('applied') || topics.includes('application'))) {
+      const companies = [...new Set(apps.map((a) => a.company).filter(Boolean))]
+      return {
+        answer:
+          companies.length > 0
+            ? `You have applied to ${companies.length} compan${companies.length === 1 ? 'y' : 'ies'}: ${companies.join(', ')}.`
+            : 'You have no applications yet.',
       }
     }
 
-    if (lower.includes('upcoming') || lower.includes('next')) {
-      answers.push('Applications with an upcoming action date, sorted by that date.')
+    const countTopics = topics.filter((t) => TOPIC_STATUS[t] || t === 'application')
+    if (countTopics.length > 0) {
+      return { answer: describeCounts(apps, totalApplications, countTopics) }
     }
 
-    const summary = summarizeContext(dataContext)
-    const answer = answers.length > 0 ? answers.join(' ') : summary
+    if (/upcoming|next|deadline/.test(lower)) {
+      return { answer: describeUpcoming(apps) }
+    }
 
-    return { answer }
+    if (topics.length === 0 && /company|companies/.test(lower)) {
+      const companies = [...new Set(apps.map((a) => a.company).filter(Boolean))]
+      return {
+        answer:
+          companies.length > 0
+            ? `You have applied to: ${companies.join(', ')}.`
+            : 'You have no applications yet.',
+      }
+    }
+
+    return { answer: summarizeContext(dataContext) }
   }
 }
 
