@@ -37,6 +37,41 @@ function extractTerms(text) {
   return [...found]
 }
 
+function summarizeContext(dataContext) {
+  let data
+  try {
+    data = JSON.parse(dataContext)
+  } catch {
+    return `Here is what I can tell from your tracker: ${dataContext.slice(0, 500)}`
+  }
+
+  const lines = [
+    `You have ${data.totalApplications} application${data.totalApplications === 1 ? '' : 's'} in your tracker.`,
+  ]
+
+  const byStatus = {}
+  for (const app of data.applications || []) {
+    byStatus[app.status] = (byStatus[app.status] || 0) + 1
+  }
+  const breakdown = Object.entries(byStatus)
+    .map(([status, n]) => `${n} ${status}`)
+    .join(', ')
+  if (breakdown) lines.push(`Status breakdown: ${breakdown}.`)
+
+  const upcoming = (data.applications || [])
+    .filter((a) => a.nextActionDate)
+    .sort((a, b) => new Date(a.nextActionDate) - new Date(b.nextActionDate))[0]
+  if (upcoming) {
+    const date = new Date(upcoming.nextActionDate).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    })
+    lines.push(`Next up: ${upcoming.role} at ${upcoming.company} on ${date}.`)
+  }
+
+  return lines.join(' ')
+}
+
 class MockProvider {
   async isAvailable() {
     return true
@@ -80,6 +115,16 @@ class MockProvider {
 
   async answerQuestion(question, dataContext) {
     const lower = (question || '').toLowerCase()
+
+    if (/^\s*(hi+|hello+|hey+|yo|howdy|good\s+(morning|afternoon|evening))\b/.test(lower)) {
+      return {
+        answer:
+          "Hi! I'm your job tracker assistant. Try asking things like " +
+          '"How many interviews do I have?", "How many applications have I sent?" ' +
+          'or "What are my upcoming actions?"',
+      }
+    }
+
     const answers = []
 
     const countPatterns = [
@@ -102,7 +147,7 @@ class MockProvider {
       answers.push('Applications with an upcoming action date, sorted by that date.')
     }
 
-    const summary = `Here is what I can tell from your tracker: ${dataContext.slice(0, 500)}`
+    const summary = summarizeContext(dataContext)
     const answer = answers.length > 0 ? answers.join(' ') : summary
 
     return { answer }
