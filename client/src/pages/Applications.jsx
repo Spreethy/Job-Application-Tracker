@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import StatusBadge from '../components/StatusBadge'
 
@@ -35,11 +35,12 @@ function buildQuery({ status, search, sort, order }) {
 }
 
 export default function Applications() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [applications, setApplications] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [filters, setFilters] = useState({
-    status: 'all',
+    status: searchParams.get('status') || 'all',
     search: '',
     sort: 'appliedDate',
     order: 'desc',
@@ -69,6 +70,12 @@ export default function Applications() {
 
   const updateFilter = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
+    if (key === 'status') {
+      const params = new URLSearchParams(searchParams)
+      if (!value || value === 'all') params.delete('status')
+      else params.set('status', value)
+      setSearchParams(params)
+    }
   }
 
   const toggleOrder = () => {
@@ -132,7 +139,10 @@ export default function Applications() {
       )}
 
       {loading ? (
-        <div className="py-16 text-center text-gray-500">Loading applications...</div>
+        <div className="py-16 text-center text-gray-500">
+          <div className="inline-block w-6 h-6 border-2 border-gray-300 border-t-indigo-600 rounded-full animate-spin" />
+          <p className="mt-2 text-sm">Loading applications...</p>
+        </div>
       ) : applications.length === 0 ? (
         <div className="py-16 text-center">
           <p className="text-gray-600 font-medium">No applications found</p>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import StatusBadge from '../components/StatusBadge'
 
@@ -57,7 +58,12 @@ export default function Dashboard() {
   }
 
   if (!stats) {
-    return <div className="text-center py-16 text-gray-500">Loading dashboard...</div>
+    return (
+      <div className="text-center py-16 text-gray-500">
+        <div className="inline-block w-6 h-6 border-2 border-gray-300 border-t-indigo-600 rounded-full animate-spin" />
+        <p className="mt-2 text-sm">Loading dashboard...</p>
+      </div>
+    )
   }
 
   const { statusCounts, total, upcoming, aiProvider } = stats
@@ -79,9 +85,10 @@ export default function Dashboard() {
 
       <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {Object.entries(statusCounts).map(([status, count]) => (
-          <div
+          <Link
             key={status}
-            className={`border rounded-xl p-4 ${CARD_STYLES[status]}`}
+            to={`/applications?status=${status}`}
+            className={`border rounded-xl p-4 ${CARD_STYLES[status]} hover:shadow-md hover:-translate-y-0.5 transition-all`}
           >
             <div className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full ${CARD_DOT[status]}`} />
@@ -90,7 +97,7 @@ export default function Dashboard() {
               </span>
             </div>
             <p className="mt-2 text-3xl font-bold text-gray-900">{count}</p>
-          </div>
+          </Link>
         ))}
       </section>
 
@@ -131,19 +138,24 @@ export default function Dashboard() {
           ) : (
             <ul className="space-y-3">
               {upcoming.map((app) => (
-                <li key={app.id} className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">
-                      {app.role}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">{app.company}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-semibold text-indigo-600">
-                      {formatDate(app.nextActionDate)}
-                    </p>
-                    <StatusBadge status={app.status} />
-                  </div>
+                <li key={app.id}>
+                  <Link
+                    to={`/applications/${app.id}`}
+                    className="flex items-center justify-between gap-2 rounded-lg hover:bg-gray-50 -m-1 p-1 transition-colors"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">
+                        {app.role}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">{app.company}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-semibold text-indigo-600">
+                        {formatDate(app.nextActionDate)}
+                      </p>
+                      <StatusBadge status={app.status} />
+                    </div>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -164,9 +176,10 @@ export default function Dashboard() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {fitRanked.map((app) => (
-              <div
+              <Link
                 key={app.id}
-                className="border border-gray-200 rounded-lg p-4 flex flex-col gap-2"
+                to={`/applications/${app.id}`}
+                className="border border-gray-200 rounded-lg p-4 flex flex-col gap-2 hover:border-indigo-300 hover:shadow-md transition-all"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-gray-900">
@@ -186,7 +199,7 @@ export default function Dashboard() {
                     Missing: {app.missingSkills.slice(0, 3).join(', ')}
                   </p>
                 )}
-              </div>
+              </Link>
             ))}
           </div>
         )}

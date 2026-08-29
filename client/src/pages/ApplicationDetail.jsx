@@ -85,7 +85,12 @@ export default function ApplicationDetail() {
   }
 
   if (loading) {
-    return <div className="py-16 text-center text-gray-500">Loading...</div>
+    return (
+      <div className="py-16 text-center text-gray-500">
+        <div className="inline-block w-6 h-6 border-2 border-gray-300 border-t-indigo-600 rounded-full animate-spin" />
+        <p className="mt-2 text-sm">Loading...</p>
+      </div>
+    )
   }
 
   if (!application) {
