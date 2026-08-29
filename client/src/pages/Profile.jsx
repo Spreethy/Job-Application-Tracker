@@ -11,6 +11,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [loadError, setLoadError] = useState('')
+  const [editing, setEditing] = useState(false)
 
   useEffect(() => {
     api
@@ -20,27 +21,39 @@ export default function Profile() {
       .finally(() => setLoading(false))
   }, [])
 
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setProfile((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const skillsValue = Array.isArray(profile?.skills)
+    ? profile.skills.join(', ')
+    : (profile?.skills || '').toString()
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const formData = new FormData(e.target)
-    const skills = (formData.get('skills') || '')
+    const skillsRaw = Array.isArray(profile?.skills)
+      ? profile.skills.join(', ')
+      : (profile?.skills || '')
+    const skills = skillsRaw
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean)
 
     const payload = {
-      name: formData.get('name'),
-      title: formData.get('title'),
-      summary: formData.get('summary'),
+      name: profile?.name,
+      title: profile?.title,
+      summary: profile?.summary,
       skills,
-      experience: formData.get('experience'),
-      education: formData.get('education'),
+      experience: profile?.experience,
+      education: profile?.education,
     }
 
     setSaving(true)
     try {
       const res = await api.updateProfile(payload)
       setProfile(res.data)
+      setEditing(false)
       showToast('Profile saved. AI features will use these details.', 'success')
     } catch (err) {
       showToast(err.message, 'error')
@@ -61,105 +74,190 @@ export default function Profile() {
     )
   }
 
+  const emptyValue = (v) => (v || '').toString().trim() === ''
+
   return (
     <div className="space-y-6 max-w-2xl">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Your profile</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          This is what the AI uses to score job fit and generate interview prep.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Your profile</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            This is what the AI uses to score job fit and generate interview prep.
+          </p>
+        </div>
+        {!editing && (
+          <button
+            type="button"
+            onClick={() => {
+              setProfile({ ...profile })
+              setEditing(true)
+            }}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            Edit profile
+          </button>
+        )}
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {!editing ? (
+        <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Name</dt>
+              <dd className="text-sm text-gray-900 mt-0.5">
+                {emptyValue(profile?.name) ? '—' : profile.name}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Target title</dt>
+              <dd className="text-sm text-gray-900 mt-0.5">
+                {emptyValue(profile?.title) ? '—' : profile.title}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Summary</dt>
+              <dd className="text-sm text-gray-900 mt-0.5">
+                {emptyValue(profile?.summary) ? '—' : profile.summary}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Education</dt>
+              <dd className="text-sm text-gray-900 mt-0.5">
+                {emptyValue(profile?.education) ? '—' : profile.education}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Experience</dt>
+              <dd className="text-sm text-gray-900 mt-0.5">
+                {emptyValue(profile?.experience) ? '—' : profile.experience}
+              </dd>
+            </div>
+          </dl>
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Name
+            <dt className="text-sm font-medium text-gray-500">Skills</dt>
+            <dd className="mt-1.5 flex flex-wrap gap-1.5">
+              {Array.isArray(profile?.skills) && profile.skills.length ? (
+                profile.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full"
+                  >
+                    {skill}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-gray-900">—</span>
+              )}
+            </dd>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value={profile?.name || ''}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                Target title
+              </label>
+              <input
+                id="title"
+                name="title"
+                type="text"
+                placeholder="e.g. Full-Stack Developer"
+                value={profile?.title || ''}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="summary" className="block text-sm font-medium text-gray-700 mb-1">
+              Summary
+            </label>
+            <textarea
+              id="summary"
+              name="summary"
+              rows="3"
+              value={profile?.summary || ''}
+              onChange={handleChange}
+              className={inputClass + ' resize-y'}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="skills" className="block text-sm font-medium text-gray-700 mb-1">
+              Skills <span className="text-gray-400 font-normal">(comma separated)</span>
             </label>
             <input
-              id="name"
-              name="name"
+              id="skills"
+              name="skills"
               type="text"
-              defaultValue={profile?.name || ''}
+              placeholder="React, Node.js, MongoDB, TypeScript..."
+              value={skillsValue}
+              onChange={handleChange}
               className={inputClass}
             />
           </div>
+
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-              Target title
+            <label htmlFor="experience" className="block text-sm font-medium text-gray-700 mb-1">
+              Experience
+            </label>
+            <textarea
+              id="experience"
+              name="experience"
+              rows="3"
+              value={profile?.experience || ''}
+              onChange={handleChange}
+              className={inputClass + ' resize-y'}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="education" className="block text-sm font-medium text-gray-700 mb-1">
+              Education
             </label>
             <input
-              id="title"
-              name="title"
+              id="education"
+              name="education"
               type="text"
-              placeholder="e.g. Full-Stack Developer"
-              defaultValue={profile?.title || ''}
+              value={profile?.education || ''}
+              onChange={handleChange}
               className={inputClass}
             />
           </div>
-        </div>
 
-        <div>
-          <label htmlFor="summary" className="block text-sm font-medium text-gray-700 mb-1">
-            Summary
-          </label>
-          <textarea
-            id="summary"
-            name="summary"
-            rows="3"
-            defaultValue={profile?.summary || ''}
-            className={inputClass + ' resize-y'}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="skills" className="block text-sm font-medium text-gray-700 mb-1">
-            Skills <span className="text-gray-400 font-normal">(comma separated)</span>
-          </label>
-          <input
-            id="skills"
-            name="skills"
-            type="text"
-            placeholder="React, Node.js, MongoDB, TypeScript..."
-            defaultValue={profile?.skills?.join(', ') || ''}
-            className={inputClass}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="experience" className="block text-sm font-medium text-gray-700 mb-1">
-            Experience
-          </label>
-          <textarea
-            id="experience"
-            name="experience"
-            rows="3"
-            defaultValue={profile?.experience || ''}
-            className={inputClass + ' resize-y'}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="education" className="block text-sm font-medium text-gray-700 mb-1">
-            Education
-          </label>
-          <input
-            id="education"
-            name="education"
-            type="text"
-            defaultValue={profile?.education || ''}
-            className={inputClass}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
-        >
-          {saving ? 'Saving...' : 'Save profile'}
-        </button>
-      </form>
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={saving}
+              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+            >
+              {saving ? 'Saving...' : 'Save profile'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="text-sm text-gray-600 hover:text-gray-900 font-medium px-4 py-2.5"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   )
 }
