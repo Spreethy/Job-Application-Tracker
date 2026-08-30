@@ -266,13 +266,25 @@ export default function ApplicationDetail() {
             ) : (
               <div>
                 {application.interviewPrep?.length > 0 && (
-                  <ul className="space-y-2 mb-4">
-                    {application.interviewPrep.map((q, i) => (
-                      <li key={i} className="text-sm text-gray-700 flex gap-2">
-                        <span className="text-indigo-500 font-medium shrink-0">{i + 1}.</span>
-                        {q}
-                      </li>
-                    ))}
+                  <ul className="space-y-4 mb-4">
+                    {application.interviewPrep.map((item, i) => {
+                      const isString = typeof item === 'string'
+                      const question = isString ? item : item?.question
+                      const answer = isString ? '' : item?.answer
+                      return (
+                        <li key={i} className="text-sm">
+                          <p className="flex gap-2 font-medium text-gray-800">
+                            <span className="text-indigo-500 font-medium shrink-0">{i + 1}.</span>
+                            {question}
+                          </p>
+                          {answer && (
+                            <p className="mt-1.5 ml-6 text-gray-600 whitespace-pre-wrap border-l-2 border-gray-200 pl-3">
+                              {answer}
+                            </p>
+                          )}
+                        </li>
+                      )
+                    })}
                   </ul>
                 )}
                 <button

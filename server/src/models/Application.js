@@ -26,7 +26,16 @@ const applicationSchema = new mongoose.Schema(
     fitScore: { type: Number, default: null, min: 0, max: 100 },
     missingSkills: { type: [String], default: [] },
     fitAnalysis: { type: String, default: '' },
-    interviewPrep: { type: [String], default: [] },
+    interviewPrep: {
+      type: [
+        {
+          question: { type: String, default: '' },
+          answer: { type: String, default: '' },
+        },
+      ],
+      default: [],
+      _id: false,
+    },
     history: {
       type: [historyEntrySchema],
       default: function () {

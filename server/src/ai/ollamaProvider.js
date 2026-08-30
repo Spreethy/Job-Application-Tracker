@@ -85,7 +85,8 @@ class OllamaProvider {
   async generateInterviewPrep(jobDescription, profile) {
     const system = [
       'You are an interview coach. Return ONLY a JSON object with a single key "questions"',
-      'containing an array of 5 realistic interview questions for this candidate.',
+      'containing an array of exactly 5 objects, each with two string keys "question" and "answer".',
+      'The answer should be a realistic, helpful model answer to that interview question.',
       'Do not include markdown or any text outside the JSON.',
     ].join(' ')
 
@@ -102,7 +103,14 @@ class OllamaProvider {
       throw new Error('Could not parse AI response')
     }
 
-    return { questions: parsed.questions.slice(0, 6) }
+    return {
+      questions: parsed.questions
+        .slice(0, 6)
+        .map((q) => ({
+          question: String(q?.question || q || ''),
+          answer: String(q?.answer || ''),
+        })),
+    }
   }
 
   async answerQuestion(question, dataContext) {

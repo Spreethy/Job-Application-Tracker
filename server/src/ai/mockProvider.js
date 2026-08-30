@@ -208,12 +208,50 @@ class MockProvider {
 
   async generateInterviewPrep(jobDescription, profile) {
     const terms = extractTerms(jobDescription).slice(0, 4)
+    const [t1, t2, t3, t4] = [
+      terms[0] || 'your main stack',
+      terms[1] || 'full-stack',
+      terms[2] || 'larger',
+      terms[3] || 'your team',
+    ]
     const questions = [
-      `Can you walk me through a project where you used ${terms[0] || 'your main stack'}?`,
-      'How do you approach learning a new technology quickly?',
-      `Describe a challenge you solved while building a ${terms[1] || 'full-stack'} feature.`,
-      'How do you prioritize and plan your work when handling multiple tasks?',
-      'Why are you interested in this role and what makes you a good fit?',
+      {
+        question: `Can you walk me through a project where you used ${t1}?`,
+        answer:
+          `I would describe a project end to end using the STAR method: the situation, the task, ` +
+          `the action, and the result. I'd focus specifically on ${t1}, explain why I chose it, ` +
+          `the trade-offs I considered, and quantify the outcome (e.g. performance, users, or time saved).`,
+      },
+      {
+        question: 'How do you approach learning a new technology quickly?',
+        answer:
+          'I start with the official docs and a small proof-of-concept, then build a tiny real-world ' +
+          'feature with it. I encode what I learn (notes or a short demo), review the common gotchas, ' +
+          'and validate my understanding by explaining it to a teammate or writing a short summary.',
+      },
+      {
+        question: `Describe a challenge you solved while building a ${t2} feature.`,
+        answer:
+          `I'd pick a concrete challenge I hit while building a ${t2} feature — for example an ` +
+          `integration bug, a performance bottleneck, or a tricky requirement. I'd walk through how I ` +
+          `isolated the root cause, the options I evaluated, what I chose and why, and the measurable ` +
+          `outcome. I'd connect it to the skills this role needs.`,
+      },
+      {
+        question: 'How do you prioritize and plan your work when handling multiple tasks?',
+        answer:
+          'I write down all open tasks and rank them by impact and deadline. I break larger items into ' +
+          'smaller, shippable steps, use a short planning cadence (daily or weekly), and communicate ' +
+          'trade-offs early if scope shifts. I always keep one clearly defined top priority so progress ' +
+          'stays visible.',
+      },
+      {
+        question: 'Why are you interested in this role and what makes you a good fit?',
+        answer:
+          `Based on my profile, this role aligns with my background in ${t3} work and my strengths in ` +
+          `${t4}. I'd connect my most relevant experience and skills to the job description, mention ` +
+          `specific examples, and express genuine interest in the product and team.`,
+      },
     ]
     return { questions }
   }
