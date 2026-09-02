@@ -36,6 +36,11 @@ const applicationSchema = new mongoose.Schema(
       default: [],
       _id: false,
     },
+    source: { type: String, enum: ['manual', 'url_import', 'resume_parse'], default: 'manual' },
+    sourceUrl: { type: String, default: '' },
+    resumeFileName: { type: String, default: '' },
+    reminderSent: { type: Boolean, default: false },
+    customPrompt: { type: String, default: '' },
     history: {
       type: [historyEntrySchema],
       default: function () {

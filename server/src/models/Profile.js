@@ -8,6 +8,7 @@ const profileSchema = new mongoose.Schema(
     skills: { type: [String], default: [] },
     experience: { type: String, default: '' },
     education: { type: String, default: '' },
+    customPrompt: { type: String, default: '' },
   },
   {
     timestamps: true,

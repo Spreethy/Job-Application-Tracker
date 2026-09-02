@@ -7,6 +7,7 @@ const applicationRoutes = require('./routes/applicationRoutes')
 const profileRoutes = require('./routes/profileRoutes')
 const statsRoutes = require('./routes/statsRoutes')
 const aiRoutes = require('./routes/aiRoutes')
+const importRoutes = require('./routes/importRoutes')
 
 const app = express()
 
@@ -21,6 +22,7 @@ app.use('/api/applications', applicationRoutes)
 app.use('/api/profile', profileRoutes)
 app.use('/api/stats', statsRoutes)
 app.use('/api', aiRoutes)
+app.use('/api', importRoutes)
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' })

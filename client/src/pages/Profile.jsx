@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import { useToast } from '../components/toast-context'
+import { ResumeUpload } from '../components/ResumeUpload'
 
 const inputClass =
   'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500'
@@ -157,7 +158,21 @@ export default function Profile() {
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+        <div className="space-y-6">
+          <ResumeUpload
+            onParseComplete={(data) => {
+              if (data.parsed) {
+                setProfile((prev) => ({
+                  ...prev,
+                  name: data.parsed.name || prev?.name,
+                  skills: [...new Set([...(prev?.skills || []), ...data.parsed.skills])],
+                  experience: data.parsed.experience || prev?.experience,
+                  education: data.parsed.education || prev?.education,
+                }))
+              }
+            }}
+          />
+          <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -262,6 +277,7 @@ export default function Profile() {
             </button>
           </div>
         </form>
+        </div>
       )}
     </div>
   )

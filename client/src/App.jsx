@@ -7,6 +7,7 @@ import EditApplication from './pages/EditApplication'
 import ApplicationDetail from './pages/ApplicationDetail'
 import Profile from './pages/Profile'
 import Assistant from './pages/Assistant'
+import Import from './pages/Import'
 import ToastProvider from './components/Toast'
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
           <Route path="/applications/:id/edit" element={<EditApplication />} />
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/import" element={<Import />} />
         </Routes>
         </Layout>
       </ToastProvider>

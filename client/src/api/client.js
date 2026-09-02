@@ -37,4 +37,14 @@ export const api = {
   getStats: () => request('/stats'),
   askAssistant: (message) =>
     request('/assistant', { method: 'POST', body: JSON.stringify({ message }) }),
+  parseResume: (file) => {
+    const formData = new FormData()
+    formData.append('resume', file)
+    return fetch('/api/parse-resume', {
+      method: 'POST',
+      body: formData,
+    }).then(res => res.json())
+  },
+  importFromUrl: (url) =>
+    request('/import/url', { method: 'POST', body: JSON.stringify({ url }) }),
 }

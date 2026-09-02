@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom'
 const navItems = [
   { to: '/', label: 'Dashboard', end: true },
   { to: '/applications', label: 'Applications' },
+  { to: '/import', label: 'Import' },
   { to: '/assistant', label: 'AI Assistant' },
   { to: '/profile', label: 'Profile' },
 ]
