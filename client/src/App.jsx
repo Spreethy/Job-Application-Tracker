@@ -8,6 +8,7 @@ import ApplicationDetail from './pages/ApplicationDetail'
 import Profile from './pages/Profile'
 import Assistant from './pages/Assistant'
 import Import from './pages/Import'
+import Kanban from './pages/Kanban'
 import ToastProvider from './components/Toast'
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/import" element={<Import />} />
+          <Route path="/board" element={<Kanban />} />
         </Routes>
         </Layout>
       </ToastProvider>

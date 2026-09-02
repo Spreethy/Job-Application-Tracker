@@ -4,6 +4,7 @@ import { useTheme } from './ThemeContext'
 const navItems = [
   { to: '/', label: 'Dashboard', end: true },
   { to: '/applications', label: 'Applications' },
+  { to: '/board', label: 'Board' },
   { to: '/import', label: 'Import' },
   { to: '/assistant', label: 'AI Assistant' },
   { to: '/profile', label: 'Profile' },
